@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PetUber - Dịch vụ thú cưng</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --g: #00b14f;
+      --gd: #008f3f;
+      --gl: #e8f9f0;
+      --bg: #f5f5f5;
+      --card: #ffffff;
+      --txt: #1a1a1a;
+      --txt2: #777;
+      --brd: #ebebeb;
+      --red: #E24B4A;
+    }
+
+    [data-dark="true"] {
+      --bg: #111;
+      --card: #1c1c1c;
+      --txt: #f0f0f0;
+      --txt2: #888;
+      --brd: #2a2a2a;
+      --gl: #0a2e1a;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--txt);
+      font-family: 'Lexend', sans-serif;
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+      transition: background .3s, color .3s;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 420px;
+      background: var(--bg);
+      min-height: 100vh;
+      padding-bottom: 40px;
+      position: relative;
+    }
+
+    /* ─── HEADER ─── */
+    .hdr {
+      position: sticky;
+      top: 0;
+      background: var(--card);
+      border-bottom: 1px solid var(--brd);
+      padding: 14px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 200;
+    }
+    .logo { font-size: 22px; font-weight: 800; color: var(--g); letter-spacing: -1px; }
+    .hdr-icons { display: flex; gap: 14px; }
+    .hdr-btn {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: var(--bg);
+      border: 1px solid var(--brd);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      font-size: 16px;
+      position: relative;
+      transition: .15s;
+    }
+    .hdr-btn:hover { background: var(--gl); }
+    .notif-badge {
+      position: absolute; top: -3px; right: -3px;
+      width: 16px; height: 16px;
+      background: var(--red); color: white;
+      border-radius: 50%; font-size: 9px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700;
+    }
+
+    /* ─── CLOCK CARD ─── */
+    .clock-card {
+      margin: 14px;
+      background: var(--g);
+      border-radius: 20px;
+      padding: 24px 20px 20px;
+      color: white;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .clock-card::before {
+      content: '';
+      position: absolute;
+      width: 200px; height: 200px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.07);
+      top: -60px; right: -40px;
+    }
+    .clock-time {
+      font-size: 58px;
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: -2px;
+    }
+    .clock-date { font-size: 13px; opacity: .75; margin-top: 6px; }
+    .tz-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(0,0,0,0.2);
+      border-radius: 20px;
+      padding: 5px 14px;
+      font-size: 12px;
+      margin-top: 12px;
+      cursor: pointer;
+      transition: .15s;
+    }
+    .tz-pill:hover { background: rgba(0,0,0,0.35); }
+
+    /* ─── TZ PICKER ─── */
+    .tz-picker {
+      margin: 0 14px 14px;
+      background: var(--card);
+      border-radius: 16px;
+      border: 1px solid var(--brd);
+      overflow: hidden;
+      display: none;
+      animation: fadeDown .2s ease;
+    }
+    .tz-picker.open { display: block; }
+    @keyframes fadeDown { from { opacity:0; transform:translateY(-6px); } }
+    .tz-search { padding: 10px 14px; border-bottom: 1px solid var(--brd); }
+    .tz-search input {
+      width: 100%;
+      border: 1px solid var(--brd);
+      border-radius: 10px;
+      padding: 8px 12px;
+      font-size: 13px;
+      font-family: 'Lexend', sans-serif;
+      background: var(--bg);
+      color: var(--txt);
+      outline: none;
+    }
+    .tz-search input:focus { border-color: var(--g); }
+    .tz-list { max-height: 220px; overflow-y: auto; }
+    .tz-list::-webkit-scrollbar { width: 4px; }
+    .tz-list::-webkit-scrollbar-thumb { background: var(--brd); border-radius: 4px; }
+    .tz-item {
+      padding: 11px 16px;
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: var(--txt);
+      border-bottom: 1px solid var(--brd);
+      transition: .1s;
+    }
+    .tz-item:hover { background: var(--bg); }
+    .tz-item.active { color: var(--g); font-weight: 600; }
+    .tz-item .tz-city { font-size: 11px; color: var(--txt2); margin-left: 4px; }
+    .tz-offset { color: var(--txt2); font-size: 11px; background: var(--bg); padding: 2px 8px; border-radius: 20px; }
+
+    /* ─── QUICK ACTIONS ─── */
+    .grid4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; padding: 0 14px 14px; }
+    .gitem { text-align: center; cursor: pointer; }
+    .gbox {
+      width: 58px; height: 58px;
+      background: var(--card);
+      border-radius: 16px;
+      border: 1px solid var(--brd);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 6px;
+      font-size: 24px;
+      transition: .15s;
+    }
+    .gitem:hover .gbox { background: var(--gl); border-color: var(--g); transform: translateY(-2px); }
+    .gitem span { font-size: 11px; color: var(--txt2); font-weight: 500; }
+
+    /* ─── NOTIFICATION PANEL ─── */
+    .notif-panel {
+      margin: 0 14px 14px;
+      background: var(--card);
+      border-radius: 16px;
+      border: 1px solid var(--brd);
+      overflow: hidden;
+      display: none;
+      animation: fadeDown .2s ease;
+    }
+    .notif-panel.open { display: block; }
+    .notif-item {
+      padding: 12px 16px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      border-bottom: 1px solid var(--brd);
+    }
+    .notif-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--g); margin-top: 5px; flex-shrink: 0; }
+    .notif-txt { font-size: 13px; color: var(--txt); line-height: 1.5; }
+    .notif-time { font-size: 11px; color: var(--txt2); margin-top: 2px; }
+
+    /* ─── SECTION CARD ─── */
+    .section {
+      margin: 0 14px 14px;
+      background: var(--card);
+      border-radius: 16px;
+      border: 1px solid var(--brd);
+      overflow: hidden;
+    }
+    .section-hdr {
+      padding: 14px 16px 10px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--txt);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .section-hdr button {
+      font-size: 12px;
+      color: var(--g);
+      background: var(--gl);
+      border: none;
+      cursor: pointer;
+      padding: 4px 10px;
+      border-radius: 8px;
+      font-family: 'Lexend', sans-serif;
+      font-weight: 500;
+    }
+
+    /* ─── CALENDAR ─── */
+    .cal-grid { padding: 0 16px 14px; }
+    .cal-nav { display: flex; justify-content: space-between; align-items: center; padding-bottom: 12px; }
+    .cal-nav span { font-size: 14px; font-weight: 600; color: var(--txt); }
+    .cal-nav button {
+      background: var(--bg);
+      border: 1px solid var(--brd);
+      border-radius: 8px;
+      padding: 5px 12px;
+      cursor: pointer;
+      font-size: 13px;
+      color: var(--txt);
+      font-family: 'Lexend', sans-serif;
+      transition: .15s;
+    }
+    .cal-nav button:hover { background: var(--gl); border-color: var(--g); color: var(--g); }
+    .cal-days { display: grid; grid-template-columns: repeat(7,1fr); gap: 2px; text-align: center; }
+    .cal-dow { font-size: 10px; color: var(--txt2); padding: 4px 0; font-weight: 600; }
+    .cal-day { font-size: 12px; padding: 7px 2px; border-radius: 8px; cursor: pointer; color: var(--txt); transition: .1s; position: relative; }
+    .cal-day:hover { background: var(--bg); }
+    .cal-day.today { background: var(--g); color: white; font-weight: 700; }
+    .cal-day.has-event::after { content:''; display:block; width:4px; height:4px; border-radius:50%; background: var(--g); margin:2px auto 0; }
+    .cal-day.today.has-event::after { background: white; }
+    .cal-day.other-month { color: var(--txt2); opacity: .35; }
+
+    /* ─── BOOKING FORM ─── */
+    .inp-full { padding: 0 16px 10px; }
+    .inp-full input {
+      width: 100%;
+      border: 1px solid var(--brd);
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 13px;
+      font-family: 'Lexend', sans-serif;
+      background: var(--bg);
+      color: var(--txt);
+      outline: none;
+      transition: border .15s;
+    }
+    .inp-full input:focus { border-color: var(--g); }
+    .inp-row { padding: 0 16px 10px; display: flex; gap: 8px; }
+    .inp-row input, .inp-row select {
+      flex: 1;
+      border: 1px solid var(--brd);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 13px;
+      font-family: 'Lexend', sans-serif;
+      background: var(--bg);
+      color: var(--txt);
+      outline: none;
+      transition: border .15s;
+    }
+    .inp-row input:focus, .inp-row select:focus { border-color: var(--g); }
+
+    /* ─── SOUND OPTIONS ─── */
+    .sound-bar { padding: 0 16px 10px; }
+    .sound-bar label { font-size: 12px; color: var(--txt2); display: block; margin-bottom: 8px; font-weight: 500; }
+    .sound-opts { display: flex; gap: 6px; flex-wrap: wrap; }
+    .sound-opt {
+      font-size: 12px;
+      padding: 5px 12px;
+      border-radius: 20px;
+      border: 1px solid var(--brd);
+      cursor: pointer;
+      color: var(--txt2);
+      background: var(--bg);
+      transition: .15s;
+      font-family: 'Lexend', sans-serif;
+    }
+    .sound-opt:hover { border-color: var(--g); color: var(--g); }
+    .sound-opt.active { border-color: var(--g); color: var(--g); background: var(--gl); font-weight: 600; }
+
+    .btn-g {
+      display: block;
+      margin: 0 16px 16px;
+      background: var(--g);
+      color: white;
+      border: none;
+      padding: 13px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      width: calc(100% - 32px);
+      font-family: 'Lexend', sans-serif;
+      letter-spacing: .3px;
+      transition: background .15s, transform .1s;
+    }
+    .btn-g:hover { background: var(--gd); }
+    .btn-g:active { transform: scale(.98); }
+
+    /* ─── TASK LIST ─── */
+    .task-item {
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-top: 1px solid var(--brd);
+      animation: slideUp .25s ease;
+    }
+    @keyframes slideUp { from { opacity:0; transform:translateY(8px); } }
+    .task-ava {
+      width: 42px; height: 42px;
+      border-radius: 50%;
+      background: var(--gl);
+      border: 2px solid var(--g);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+    .task-info { flex: 1; min-width: 0; }
+    .task-info h4 { font-size: 14px; font-weight: 600; color: var(--txt); margin: 0 0 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .task-info p { font-size: 12px; color: var(--txt2); margin: 0; }
+    .task-actions { display: flex; gap: 6px; align-items: center; }
+    .task-sound-btn {
+      font-size: 16px;
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 8px;
+      transition: .15s;
+    }
+    .task-sound-btn:hover { background: var(--gl); }
+    .task-del { font-size: 14px; cursor: pointer; color: var(--txt2); padding: 4px 6px; border-radius: 8px; transition: .15s; }
+    .task-del:hover { color: var(--red); background: #fdf0f0; }
+    .badge {
+      display: inline-block;
+      background: var(--gl);
+      color: var(--g);
+      border-radius: 20px;
+      font-size: 11px;
+      padding: 2px 8px;
+      font-weight: 700;
+    }
+    .empty { padding: 20px 16px; text-align: center; font-size: 13px; color: var(--txt2); }
+
+    /* ─── SETTINGS ─── */
+    .setting-row {
+      padding: 13px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid var(--brd);
+    }
+    .setting-label { font-size: 13px; color: var(--txt); font-weight: 500; }
+    .setting-sub { font-size: 11px; color: var(--txt2); margin-top: 2px; }
+    .toggle {
+      width: 42px; height: 24px;
+      border-radius: 12px;
+      background: #ccc;
+      position: relative;
+      cursor: pointer;
+      transition: background .2s;
+      flex-shrink: 0;
+    }
+    .toggle.on { background: var(--g); }
+    .toggle::after {
+      content: '';
+      width: 20px; height: 20px;
+      background: white;
+      border-radius: 50%;
+      position: absolute;
+      top: 2px; left: 2px;
+      transition: .2s;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+    .toggle.on::after { left: 20px; }
+    .setting-select {
+      border: 1px solid var(--brd);
+      border-radius: 8px;
+      padding: 5px 10px;
+      font-size: 12px;
+      font-family: 'Lexend', sans-serif;
+      background: var(--bg);
+      color: var(--txt);
+      outline: none;
+    }
+  </style>
+</head>
+<body>
+<div class="app" id="app">
+
+  <!-- HEADER -->
+  <div class="hdr">
+    <div class="logo">PetUber</div>
+    <div class="hdr-icons">
+      <div class="hdr-btn" onclick="toggleNotif()" title="Thông báo">
+        🔔
+        <div class="notif-badge" id="notif-badge" style="display:none">0</div>
+      </div>
+      <div class="hdr-btn">👤</div>
+    </div>
+  </div>
+
+  <!-- ĐỒNG HỒ -->
+  <div class="clock-card">
+    <div class="clock-time" id="clk">00:00:00</div>
+    <div class="clock-date" id="clk-date">Thứ Ba, 6 tháng 5 2026</div>
+    <div class="tz-pill" onclick="toggleTzPicker()">
+      🌐 <span id="tz-label">Việt Nam (GMT+7)</span> ▾
+    </div>
+  </div>
+
+  <!-- BỘ CHỌN MÚI GIỜ -->
+  <div class="tz-picker" id="tz-picker">
+    <div class="tz-search">
+      <input type="text" id="tz-search-inp" placeholder="🔍 Tìm quốc gia hoặc thành phố..." oninput="filterTz(this.value)">
+    </div>
+    <div class="tz-list" id="tz-list"></div>
+  </div>
+
+  <!-- THÔNG BÁO -->
+  <div class="notif-panel" id="notif-panel">
+    <div class="section-hdr">
+      🔔 Thông báo
+      <button onclick="clearNotifs()">Xóa hết</button>
+    </div>
+    <div id="notif-list"><div class="empty">Chưa có thông báo nào.</div></div>
+  </div>
+
+  <!-- PHÍM TẮT NHANH -->
+  <div class="grid4">
+    <div class="gitem" onclick="toggleTzPicker()">
+      <div class="gbox">🌐</div>
+      <span>Múi giờ</span>
+    </div>
+    <div class="gitem" onclick="scrollToEl('.cal-section')">
+      <div class="gbox">📅</div>
+      <span>Bộ lịch</span>
+    </div>
+    <div class="gitem" onclick="scrollToEl('.settings-section')">
+      <div class="gbox">⚙️</div>
+      <span>Cài đặt</span>
+    </div>
+    <div class="gitem" onclick="scrollToEl('.booking-section')">
+      <div class="gbox">🔔</div>
+      <span>Nhắc hẹn</span>
+    </div>
+  </div>
+
+  <!-- BỘ LỊCH -->
+  <div class="section cal-section">
+    <div class="section-hdr">📅 Bộ lịch</div>
+    <div class="cal-grid">
+      <div class="cal-nav">
+        <button onclick="changeMonth(-1)">◀ Trước</button>
+        <span id="cal-title"></span>
+        <button onclick="changeMonth(1)">Sau ▶</button>
+      </div>
+      <div class="cal-days" id="cal-days"></div>
+    </div>
+  </div>
+
+  <!-- ĐẶT LỊCH NHẮC HẸN -->
+  <div class="section booking-section">
+    <div class="section-hdr">🗓️ Đặt lịch nhắc hẹn</div>
+    <div class="inp-full">
+      <input type="text" id="task-name" placeholder="Hôm nay Sen định làm gì cho Boss?">
+    </div>
+    <div class="inp-row">
+      <input type="time" id="task-time">
+      <select id="pet-type">
+        <option value="dog">🐶 Boss Chó</option>
+        <option value="cat">🐱 Boss Mèo</option>
+        <option value="bird">🦜 Boss Chim</option>
+        <option value="rabbit">🐰 Boss Thỏ</option>
+        <option value="fish">🐠 Boss Cá</option>
+        <option value="hamster">🐹 Boss Hamster</option>
+        <option value="turtle">🐢 Boss Rùa</option>
+      </select>
+    </div>
+
+    <!-- ÂM THANH -->
+    <div class="sound-bar">
+      <label>🔊 Âm thanh nhắc hẹn (nhấn để nghe thử)</label>
+      <div class="sound-opts" id="sound-opts">
+        <div class="sound-opt active" data-sound="beep" onclick="selectSound(this)">🔔 Chuông</div>
+        <div class="sound-opt" data-sound="bark" onclick="selectSound(this)">🐶 Sủa</div>
+        <div class="sound-opt" data-sound="meow" onclick="selectSound(this)">🐱 Meo</div>
+        <div class="sound-opt" data-sound="chime" onclick="selectSound(this)">🎵 Nhạc</div>
+        <div class="sound-opt" data-sound="ding" onclick="selectSound(this)">🔈 Bip</div>
+        <div class="sound-opt" data-sound="alert" onclick="selectSound(this)">🚨 Báo động</div>
+        <div class="sound-opt" data-sound="none" onclick="selectSound(this)">🔇 Im lặng</div>
+      </div>
+    </div>
+
+    <button class="btn-g" onclick="addTask()">✅ Xác nhận đặt lịch</button>
+  </div>
+
+  <!-- DANH SÁCH LỊCH TRÌNH -->
+  <div class="section">
+    <div class="section-hdr">
+      📋 Lịch trình hôm nay
+      <span class="badge" id="task-count">0</span>
+    </div>
+    <div id="tasks-container"><div class="empty">Chưa có lịch trình nào. Hãy đặt lịch cho Boss nhé! 🐾</div></div>
+  </div>
+
+  <!-- CÀI ĐẶT -->
+  <div class="section settings-section">
+    <div class="section-hdr">⚙️ Cài đặt</div>
+
+    <div class="setting-row">
+      <div>
+        <div class="setting-label">Thông báo âm thanh</div>
+        <div class="setting-sub">Phát âm khi đến giờ nhắc</div>
+      </div>
+      <div class="toggle on" id="toggle-sound" onclick="toggleSetting('sound')"></div>
+    </div>
+
+    <div class="setting-row">
+      <div>
+        <div class="setting-label">Rung khi nhắc hẹn</div>
+        <div class="setting-sub">Kết hợp rung cùng âm thanh</div>
+      </div>
+      <div class="toggle on" id="toggle-vibrate" onclick="toggleSetting('vibrate')"></div>
+    </div>
+
+    <div class="setting-row">
+      <div><div class="setting-label">Nhắc trước bao nhiêu phút</div></div>
+      <select class="setting-select" id="remind-before">
+        <option value="5">5 phút</option>
+        <option value="10" selected>10 phút</option>
+        <option value="15">15 phút</option>
+        <option value="30">30 phút</option>
+        <option value="60">1 giờ</option>
+      </select>
+    </div>
+
+    <div class="setting-row">
+      <div><div class="setting-label">Ngôn ngữ giao diện</div></div>
+      <select class="setting-select">
+        <option>🇻🇳 Tiếng Việt</option>
+        <option>🇺🇸 English</option>
+        <option>🇯🇵 日本語</option>
+        <option>🇰🇷 한국어</option>
+        <option>🇨🇳 中文</option>
+        <option>🇫🇷 Français</option>
+      </select>
+    </div>
+
+    <div class="setting-row">
+      <div>
+        <div class="setting-label">Chế độ tối</div>
+        <div class="setting-sub">Bật/tắt dark mode</div>
+      </div>
+      <div class="toggle" id="toggle-dark" onclick="toggleSetting('dark')"></div>
+    </div>
+
+    <div class="setting-row">
+      <div>
+        <div class="setting-label">Lưu lịch sử hoạt động</div>
+        <div class="setting-sub">Lưu log các lịch đã thực hiện</div>
+      </div>
+      <div class="toggle on" id="toggle-history" onclick="toggleSetting('history')"></div>
+    </div>
+  </div>
+
+</div><!-- end .app -->
+
+<script>
+
+const TZ_LIST = [
+  // ĐÔNG NAM Á
+  {label:"Việt Nam",         city:"Hà Nội",           tz:"Asia/Ho_Chi_Minh",                    off:"+7"},
+  {label:"Thái Lan",         city:"Bangkok",           tz:"Asia/Bangkok",                        off:"+7"},
+  {label:"Indonesia",        city:"Jakarta",           tz:"Asia/Jakarta",                        off:"+7"},
+  {label:"Myanmar",          city:"Yangon",            tz:"Asia/Rangoon",                        off:"+6:30"},
+  {label:"Malaysia",         city:"Kuala Lumpur",      tz:"Asia/Kuala_Lumpur",                   off:"+8"},
+  {label:"Singapore",        city:"Singapore",         tz:"Asia/Singapore",                      off:"+8"},
+  {label:"Philippines",      city:"Manila",            tz:"Asia/Manila",                         off:"+8"},
+  {label:"Campuchia",        city:"Phnom Penh",        tz:"Asia/Phnom_Penh",                     off:"+7"},
+  {label:"Lào",              city:"Vientiane",         tz:"Asia/Vientiane",                      off:"+7"},
+  {label:"Brunei",           city:"Bandar Seri Begawan",tz:"Asia/Brunei",                       off:"+8"},
+  // ĐÔNG Á
+  {label:"Nhật Bản",         city:"Tokyo",             tz:"Asia/Tokyo",                          off:"+9"},
+  {label:"Hàn Quốc",         city:"Seoul",             tz:"Asia/Seoul",                          off:"+9"},
+  {label:"Trung Quốc",       city:"Bắc Kinh",          tz:"Asia/Shanghai",                       off:"+8"},
+  {label:"Đài Loan",         city:"Taipei",            tz:"Asia/Taipei",                         off:"+8"},
+  {label:"Hồng Kông",        city:"Hong Kong",         tz:"Asia/Hong_Kong",                      off:"+8"},
+  {label:"Mông Cổ",          city:"Ulaanbaatar",       tz:"Asia/Ulaanbaatar",                    off:"+8"},
+  // NAM Á
+  {label:"Ấn Độ",            city:"New Delhi",         tz:"Asia/Kolkata",                        off:"+5:30"},
+  {label:"Pakistan",         city:"Karachi",           tz:"Asia/Karachi",                        off:"+5"},
+  {label:"Bangladesh",       city:"Dhaka",             tz:"Asia/Dhaka",                          off:"+6"},
+  {label:"Sri Lanka",        city:"Colombo",           tz:"Asia/Colombo",                        off:"+5:30"},
+  {label:"Nepal",            city:"Kathmandu",         tz:"Asia/Kathmandu",                      off:"+5:45"},
+  // TRUNG Á & TRUNG ĐÔNG
+  {label:"UAE",              city:"Dubai",             tz:"Asia/Dubai",                          off:"+4"},
+  {label:"Ả Rập Saudi",      city:"Riyadh",            tz:"Asia/Riyadh",                         off:"+3"},
+  {label:"Iran",             city:"Tehran",            tz:"Asia/Tehran",                         off:"+3:30"},
+  {label:"Israel",           city:"Jerusalem",         tz:"Asia/Jerusalem",                      off:"+2/+3"},
+  {label:"Thổ Nhĩ Kỳ",       city:"Istanbul",          tz:"Europe/Istanbul",                     off:"+3"},
+  {label:"Kazakhstan",       city:"Almaty",            tz:"Asia/Almaty",                         off:"+6"},
+  {label:"Uzbekistan",       city:"Tashkent",          tz:"Asia/Tashkent",                       off:"+5"},
+  {label:"Qatar",            city:"Doha",              tz:"Asia/Qatar",                          off:"+3"},
+  {label:"Kuwait",           city:"Kuwait City",       tz:"Asia/Kuwait",                         off:"+3"},
+  // NGA
+  {label:"Nga - Moscow",     city:"Moscow",            tz:"Europe/Moscow",                       off:"+3"},
+  {label:"Nga - Novosibirsk",city:"Novosibirsk",       tz:"Asia/Novosibirsk",                    off:"+7"},
+  {label:"Nga - Vladivostok",city:"Vladivostok",       tz:"Asia/Vladivostok",                    off:"+10"},
+  // CHÂU ÂU
+  {label:"Anh",              city:"London",            tz:"Europe/London",                       off:"+0/+1"},
+  {label:"Pháp",             city:"Paris",             tz:"Europe/Paris",                        off:"+1/+2"},
+  {label:"Đức",              city:"Berlin",            tz:"Europe/Berlin",                       off:"+1/+2"},
+  {label:"Ý",                city:"Rome",              tz:"Europe/Rome",                         off:"+1/+2"},
+  {label:"Tây Ban Nha",      city:"Madrid",            tz:"Europe/Madrid",                       off:"+1/+2"},
+  {label:"Hà Lan",           city:"Amsterdam",         tz:"Europe/Amsterdam",                    off:"+1/+2"},
+  {label:"Thuỵ Sĩ",          city:"Zürich",            tz:"Europe/Zurich",                       off:"+1/+2"},
+  {label:"Ba Lan",           city:"Warsaw",            tz:"Europe/Warsaw",                       off:"+1/+2"},
+  {label:"Bỉ",               city:"Brussels",          tz:"Europe/Brussels",                     off:"+1/+2"},
+  {label:"Hy Lạp",           city:"Athens",            tz:"Europe/Athens",                       off:"+2/+3"},
+  {label:"Thuỵ Điển",        city:"Stockholm",         tz:"Europe/Stockholm",                    off:"+1/+2"},
+  {label:"Na Uy",            city:"Oslo",              tz:"Europe/Oslo",                         off:"+1/+2"},
+  {label:"Đan Mạch",         city:"Copenhagen",        tz:"Europe/Copenhagen",                   off:"+1/+2"},
+  {label:"Phần Lan",         city:"Helsinki",          tz:"Europe/Helsinki",                     off:"+2/+3"},
+  {label:"Bồ Đào Nha",       city:"Lisbon",            tz:"Europe/Lisbon",                       off:"+0/+1"},
+  {label:"Áo",               city:"Vienna",            tz:"Europe/Vienna",                       off:"+1/+2"},
+  {label:"Hungary",          city:"Budapest",          tz:"Europe/Budapest",                     off:"+1/+2"},
+  {label:"Romania",          city:"Bucharest",         tz:"Europe/Bucharest",                    off:"+2/+3"},
+  {label:"Ukraine",          city:"Kyiv",              tz:"Europe/Kiev",                         off:"+2/+3"},
+  // CHÂU PHI
+  {label:"Ai Cập",           city:"Cairo",             tz:"Africa/Cairo",                        off:"+2"},
+  {label:"Nam Phi",          city:"Johannesburg",      tz:"Africa/Johannesburg",                 off:"+2"},
+  {label:"Nigeria",          city:"Lagos",             tz:"Africa/Lagos",                        off:"+1"},
+  {label:"Kenya",            city:"Nairobi",           tz:"Africa/Nairobi",                      off:"+3"},
+  {label:"Ethiopia",         city:"Addis Ababa",       tz:"Africa/Addis_Ababa",                  off:"+3"},
+  {label:"Ghana",            city:"Accra",             tz:"Africa/Accra",                        off:"+0"},
+  {label:"Morocco",          city:"Casablanca",        tz:"Africa/Casablanca",                   off:"+1"},
+  // CHÂU MỸ
+  {label:"Mỹ - New York",    city:"New York",          tz:"America/New_York",                    off:"-5/-4"},
+  {label:"Mỹ - Chicago",     city:"Chicago",           tz:"America/Chicago",                     off:"-6/-5"},
+  {label:"Mỹ - Denver",      city:"Denver",            tz:"America/Denver",                      off:"-7/-6"},
+  {label:"Mỹ - Los Angeles", city:"Los Angeles",       tz:"America/Los_Angeles",                 off:"-8/-7"},
+  {label:"Mỹ - Phoenix",     city:"Phoenix",           tz:"America/Phoenix",                     off:"-7"},
+  {label:"Canada - Toronto", city:"Toronto",           tz:"America/Toronto",                     off:"-5/-4"},
+  {label:"Canada - Vancouver",city:"Vancouver",        tz:"America/Vancouver",                   off:"-8/-7"},
+  {label:"Mexico",           city:"Mexico City",       tz:"America/Mexico_City",                 off:"-6/-5"},
+  {label:"Brazil",           city:"São Paulo",         tz:"America/Sao_Paulo",                   off:"-3/-2"},
+  {label:"Argentina",        city:"Buenos Aires",      tz:"America/Argentina/Buenos_Aires",      off:"-3"},
+  {label:"Chile",            city:"Santiago",          tz:"America/Santiago",                    off:"-4/-3"},
+  {label:"Colombia",         city:"Bogotá",            tz:"America/Bogota",                      off:"-5"},
+  {label:"Peru",             city:"Lima",              tz:"America/Lima",                        off:"-5"},
+  {label:"Venezuela",        city:"Caracas",           tz:"America/Caracas",                     off:"-4"},
+  {label:"Cuba",             city:"Havana",            tz:"America/Havana",                      off:"-5/-4"},
+  {label:"Hawaii",           city:"Honolulu",          tz:"Pacific/Honolulu",                    off:"-10"},
+  {label:"Alaska",           city:"Anchorage",         tz:"America/Anchorage",                   off:"-9/-8"},
+  // CHÂU ÚC & THÁI BÌNH DƯƠNG
+  {label:"Úc - Sydney",      city:"Sydney",            tz:"Australia/Sydney",                    off:"+10/+11"},
+  {label:"Úc - Melbourne",   city:"Melbourne",         tz:"Australia/Melbourne",                 off:"+10/+11"},
+  {label:"Úc - Brisbane",    city:"Brisbane",          tz:"Australia/Brisbane",                  off:"+10"},
+  {label:"Úc - Perth",       city:"Perth",             tz:"Australia/Perth",                     off:"+8"},
+  {label:"Úc - Adelaide",    city:"Adelaide",          tz:"Australia/Adelaide",                  off:"+9:30/+10:30"},
+  {label:"New Zealand",      city:"Auckland",          tz:"Pacific/Auckland",                    off:"+12/+13"},
+  {label:"Fiji",             city:"Suva",              tz:"Pacific/Fiji",                        off:"+12"},
+  {label:"Papua New Guinea", city:"Port Moresby",      tz:"Pacific/Port_Moresby",                off:"+10"},
+];
+
+let currentTz = TZ_LIST[0];
+let tzPickerOpen = false;
+let notifOpen    = false;
+let selectedSound = "beep";
+let tasks = [];
+let nextId = 1;
+let notifications = [];
+let calDate = new Date(2026, 4, 1);
+let settings = { sound: true, vibrate: true, dark: false, history: true };
+
+function updateClock() {
+  const now = new Date();
+  const t = now.toLocaleTimeString('vi-VN', {
+    timeZone: currentTz.tz, hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+  });
+  const d = now.toLocaleDateString('vi-VN', {
+    timeZone: currentTz.tz, weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+  });
+  document.getElementById('clk').textContent = t;
+  document.getElementById('clk-date').textContent = d;
+  checkReminders(now);
+}
+
+function renderTzList(filter = '') {
+  const q = filter.toLowerCase();
+  const filtered = TZ_LIST.filter(t =>
+    t.label.toLowerCase().includes(q) ||
+    t.city.toLowerCase().includes(q) ||
+    t.tz.toLowerCase().includes(q)
+  );
+  document.getElementById('tz-list').innerHTML = filtered.length
+    ? filtered.map(t => `
+        <div class="tz-item ${t.tz === currentTz.tz ? 'active' : ''}" onclick="selectTz('${t.tz}')">
+          <span>${t.label} <span class="tz-city">— ${t.city}</span></span>
+          <span class="tz-offset">GMT${t.off}</span>
+        </div>
+      `).join('')
+    : '<div class="empty">Không tìm thấy kết quả.</div>';
+}
+
+function selectTz(tzId) {
+  currentTz = TZ_LIST.find(t => t.tz === tzId) || TZ_LIST[0];
+  document.getElementById('tz-label').textContent = `${currentTz.label} (GMT${currentTz.off})`;
+  renderTzList(document.getElementById('tz-search-inp').value);
+  updateClock();
+}
+
+function toggleTzPicker() {
+  tzPickerOpen = !tzPickerOpen;
+  document.getElementById('tz-picker').classList.toggle('open', tzPickerOpen);
+  if (tzPickerOpen) {
+    renderTzList();
+    setTimeout(() => document.getElementById('tz-search-inp').focus(), 100);
+  }
+}
+
+function filterTz(v) { renderTzList(v); }
+
+function toggleNotif() {
+  notifOpen = !notifOpen;
+  document.getElementById('notif-panel').classList.toggle('open', notifOpen);
+}
+
+function addNotif(msg) {
+  const now = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+  notifications.unshift({ msg, time: now });
+  renderNotifs();
+  const badge = document.getElementById('notif-badge');
+  badge.textContent = notifications.length;
+  badge.style.display = 'flex';
+}
+
+function renderNotifs() {
+  const el = document.getElementById('notif-list');
+  const badge = document.getElementById('notif-badge');
+  if (!notifications.length) {
+    el.innerHTML = '<div class="empty">Chưa có thông báo nào.</div>';
+    badge.style.display = 'none';
+    return;
+  }
+  badge.textContent = notifications.length;
+  el.innerHTML = notifications.map(n => `
+    <div class="notif-item">
+      <div class="notif-dot"></div>
+      <div>
+        <div class="notif-txt">${n.msg}</div>
+        <div class="notif-time">${n.time}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function clearNotifs() {
+  notifications = [];
+  renderNotifs();
+}
+
+function renderCalendar() {
+  const y = calDate.getFullYear(), m = calDate.getMonth();
+  const months = ['Tháng 1','Tháng 2','Tháng 3','Tháng 4','Tháng 5','Tháng 6',
+                  'Tháng 7','Tháng 8','Tháng 9','Tháng 10','Tháng 11','Tháng 12'];
+  document.getElementById('cal-title').textContent = `${months[m]} ${y}`;
+  const today = new Date();
+  const first = new Date(y, m, 1).getDay();
+  const days  = new Date(y, m + 1, 0).getDate();
+  const prevDays = new Date(y, m, 0).getDate();
+  const offset = first === 0 ? 6 : first - 1;
+  const dows = ['T2','T3','T4','T5','T6','T7','CN'];
+  const taskDays = tasks.map(t => {
+    const [h, mi] = t.time.split(':').map(Number);
+    const d = new Date(y, m, 1);
+    d.setHours(h, mi);
+    return d.getDate();
+  });
+
+  let html = dows.map(d => `<div class="cal-dow">${d}</div>`).join('');
+  for (let i = offset; i > 0; i--) html += `<div class="cal-day other-month">${prevDays - i + 1}</div>`;
+  for (let d = 1; d <= days; d++) {
+    const isToday = y === today.getFullYear() && m === today.getMonth() && d === today.getDate();
+    const hasEv   = taskDays.includes(d);
+    html += `<div class="cal-day ${isToday ? 'today' : ''} ${hasEv ? 'has-event' : ''}">${d}</div>`;
+  }
+  document.getElementById('cal-days').innerHTML = html;
+}
+
+function changeMonth(delta) {
+  calDate.setMonth(calDate.getMonth() + delta);
+  renderCalendar();
+}
+
+function playSound(type) {
+  if (!settings.sound || type === 'none') return;
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc  = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    const patterns = {
+      beep:  [{f:880,d:.12},{f:0,d:.06},{f:880,d:.12},{f:0,d:.06},{f:1100,d:.2}],
+      chime: [{f:523,d:.2},{f:659,d:.2},{f:784,d:.2},{f:1047,d:.35}],
+      ding:  [{f:1046,d:.5}],
+      bark:  [{f:200,d:.08},{f:0,d:.04},{f:170,d:.1},{f:0,d:.04},{f:210,d:.12},{f:0,d:.04},{f:180,d:.08}],
+      meow:  [{f:440,d:.1},{f:520,d:.15},{f:480,d:.1},{f:560,d:.2},{f:500,d:.15}],
+      alert: [{f:880,d:.1},{f:440,d:.1},{f:880,d:.1},{f:440,d:.1},{f:880,d:.1},{f:440,d:.1}],
+      none:  []
+    };
+
+    let t = ctx.currentTime;
+    (patterns[type] || patterns.beep).forEach(({f, d}) => {
+      if (f > 0) {
+        osc.frequency.setValueAtTime(f, t);
+        gain.gain.setValueAtTime(0.25, t);
+      } else {
+        gain.gain.setValueAtTime(0, t);
+      }
+      t += d;
+    });
+    gain.gain.setValueAtTime(0, t);
+    osc.start(ctx.currentTime);
+    osc.stop(t + 0.05);
+
+    if (settings.vibrate && navigator.vibrate) navigator.vibrate([100, 50, 100]);
+  } catch(e) { console.warn('Audio error:', e); }
+}
+
+function selectSound(el) {
+  document.querySelectorAll('.sound-opt').forEach(e => e.classList.remove('active'));
+  el.classList.add('active');
+  selectedSound = el.dataset.sound;
+  playSound(selectedSound);
+}
+
+let lastRemindCheck = '';
+function checkReminders(now) {
+  const hm = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+  if (hm === lastRemindCheck) return;
+  lastRemindCheck = hm;
+
+  const before = parseInt(document.getElementById('remind-before').value) || 10;
+  tasks.forEach(t => {
+    const [th, tm] = t.time.split(':').map(Number);
+    const diffMin = th * 60 + tm - (now.getHours() * 60 + now.getMinutes());
+    if (diffMin === before) {
+      addNotif(`⏰ Còn ${before} phút: <strong>${t.name}</strong>!`);
+      playSound(t.sound);
+    }
+    if (diffMin === 0) {
+      addNotif(`🔔 Đến giờ rồi! <strong>${t.name}</strong>`);
+      playSound(t.sound);
+    }
+  });
+}
+
+const petEmoji = {dog:'🐶',cat:'🐱',bird:'🦜',rabbit:'🐰',fish:'🐠',hamster:'🐹',turtle:'🐢'};
+const petName  = {dog:'Chó',cat:'Mèo',bird:'Chim',rabbit:'Thỏ',fish:'Cá',hamster:'Hamster',turtle:'Rùa'};
+const soundLbl = {beep:'🔔',bark:'🐶',meow:'🐱',chime:'🎵',ding:'🔈',alert:'🚨',none:'🔇'};
+
+function addTask() {
+  const name = document.getElementById('task-name').value.trim();
+  const time = document.getElementById('task-time').value;
+  const pet  = document.getElementById('pet-type').value;
+  if (!name || !time) { alert('Nhập đủ thông tin nhé Sen! 🐾'); return; }
+  tasks.push({ id: nextId++, name, time, pet, sound: selectedSound });
+  document.getElementById('task-name').value = '';
+  document.getElementById('task-time').value = '';
+  addNotif(`📅 Đã đặt lịch: ${name} lúc ${time}`);
+  renderTasks();
+  renderCalendar();
+}
+
+function delTask(id) {
+  tasks = tasks.filter(t => t.id !== id);
+  renderTasks();
+  renderCalendar();
+}
+
+function renderTasks() {
+  const el = document.getElementById('tasks-container');
+  document.getElementById('task-count').textContent = tasks.length;
+  if (!tasks.length) {
+    el.innerHTML = '<div class="empty">Chưa có lịch trình nào. Hãy đặt lịch cho Boss nhé! 🐾</div>';
+    return;
+  }
+  const sorted = [...tasks].sort((a, b) => a.time.localeCompare(b.time));
+  el.innerHTML = sorted.map(t => `
+    <div class="task-item">
+      <div class="task-ava">${petEmoji[t.pet] || '🐾'}</div>
+      <div class="task-info">
+        <h4>${t.name}</h4>
+        <p>⏰ ${t.time} · ${petName[t.pet] || t.pet}</p>
+      </div>
+      <div class="task-actions">
+        <span class="task-sound-btn" title="Nghe thử âm thanh" onclick="playSound('${t.sound}')">${soundLbl[t.sound] || '🔔'}</span>
+        <span class="task-del" title="Xóa" onclick="delTask(${t.id})">✕</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function toggleSetting(key) {
+  settings[key] = !settings[key];
+  const el = document.getElementById('toggle-' + key);
+  if (el) el.classList.toggle('on', settings[key]);
+  if (key === 'dark') {
+    document.getElementById('app').dataset.dark = settings.dark;
+  }
+}
+
+function scrollToEl(selector) {
+  const el = document.querySelector(selector);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+setInterval(updateClock, 1000);
+updateClock();
+renderTzList();
+renderCalendar();
+renderTasks();
+</script>
+</body>
+</html>
